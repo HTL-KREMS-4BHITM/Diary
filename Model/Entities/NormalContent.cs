@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Model.Entities;
-[Table("NORMAL_CONTENT")]
+[Table("NORMAL_CONTENTS")]
 public class NormalContent:Entry
 {
     [Column("CONTENT", TypeName = "TEXT")]
