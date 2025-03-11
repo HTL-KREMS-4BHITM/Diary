@@ -1,3 +1,6 @@
+using Domain.Repositories.Implementations;
+using Domain.Repositories.Interfaces;
+using Model.Entities;
 using WebGUI.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
+builder.Services.AddTransient<IRepositoryAsync<Entry>, EntryRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
