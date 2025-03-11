@@ -31,5 +31,10 @@ public class DiaryContext:DbContext
             .HasOne<Entry>(t => t.Entry)
             .WithMany()
             .HasForeignKey(t => t.EntryId);
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.Modus)
+            .HasConversion<string>();
+
     }
 }

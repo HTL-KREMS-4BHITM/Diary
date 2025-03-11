@@ -3,6 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Model;
 
+public enum EModus
+{
+    IsMagic, 
+    IsNormal
+}
+
 [Table("USERS")]
 public class User
 {
@@ -15,5 +21,8 @@ public class User
     
     [Column("PASSWORD_HASH", TypeName = "varchar(100)")]
     public string PasswordHash { get; set; }
+    
+    [Column("MODUS")]
+    public EModus Modus { get; set; }
     
 }
