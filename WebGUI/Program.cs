@@ -13,8 +13,10 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddDbContextFactory<DiaryContext>(
     options => options.UseMySql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        new MySqlServerVersion(new Version(8, 0, 27)))
+        builder.Configuration
+            .GetConnectionString("DefaultConnection"),
+        new MySqlServerVersion(new Version(8, 0, 27))
+    )
 );
 
 builder.Services.AddTransient<IRepositoryAsync<Entry>, EntryRepository>();
