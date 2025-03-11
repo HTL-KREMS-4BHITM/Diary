@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Model;
 
 [Table("RESPONSES")]
-public class Responses
+public class Response
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [Column("RESPONSE_ID", TypeName = "int")]
