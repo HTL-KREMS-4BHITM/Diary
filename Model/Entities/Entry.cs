@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Model.Entities;
 [Table("ENTRIES")]
 public class Entry
 {
-    [Column("ENTRY_ID")]
+    [Column("ENTRY_ID"), DatabaseGenerated(DatabaseGeneratedOption.Identity), Key]
     public int EntryId { get; set; }
     
     
