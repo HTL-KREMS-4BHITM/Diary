@@ -1,6 +1,73 @@
 @page "/LoginPage"
+@using System.Security.Claims
+@using Domain.Repositories.Implementations
+@using Domain.Repositories.Interfaces
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Model
+@rendermode InteractiveServer
+@inject IRepositoryAsync<User> UserRepository
+@inject NavigationManager NavigationManager
 <h3>LoginPage</h3>
+<div class="container d-flex justify-content-center align-items-center">
+    <div class="row border border-primary rounded">
+        <EditForm Model="@user" FormName="Login" OnInvalidSubmit="async() => await Login()" class="p-5 d-flex flex-column align-items-center">
+            <div class="form-group pb-2">
+                <input type="text" @bind="user.Username" class="form-control" placeholder="Enter username" required>
+            </div>
+            <div class="form-group pb-2">
+                <input type="password" @bind="user.Password" class="form-control" placeholder="Password" required>
+            </div>
+            <div>
+                <span class="text-danger">@_errormessage</span>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </EditForm>
+    </div>
+</div>
 
 @code {
-    
+    public User user = new User();
+    [CascadingParameter] public HttpContext HttpContext { get; set; }
+    private string _errormessage;
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitializedAsync();
+    }
+
+    public async Task Login()
+    {
+        //Hashing still needs to be done
+        //UserRepository.CreateAsync(user);
+        var account = await UserRepository.ReadAsync(u => u.Username == user.Username);
+        var account_passw = await UserRepository.ReadAsync(u => u.Password == user.Password);
+        if (account.Count == 0 && account_passw.Count == 0)
+        {
+            _errormessage = "Username or Password is incorrect";
+            return;
+        }
+        if (account.Count != 0 && account_passw.Count == 0)
+        {
+            var passw = await UserRepository.ReadAsync(u => u.Username == user.Username);
+            _errormessage = $"Wrong Password... Your Password is {passw[0].Password}";
+            return;
+        }
+        if (account.Count == 0 && account_passw.Count != 0)
+        {
+            var passw = await UserRepository.ReadAsync(u => u.Username == user.Username);
+            _errormessage = $"Wrong Username... Your Username is {passw[0].Username}";
+            return;
+        }
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.Username),
+        };
+
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+        await HttpContext.SignInAsync(principal);
+
+        NavigationManager.NavigateTo("/DiaryEntryPage");
+    }
+
 }

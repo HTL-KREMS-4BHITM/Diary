@@ -8,4 +8,5 @@ public class UserRepository:ARepositoryAsync<User>
     public UserRepository(DiaryContext context) : base(context)
     {
     }
+    
 }

@@ -1,6 +1,35 @@
 @page "/RegistrationPage"
-<h3>RegistrationPage</h3>
+@using Domain.Repositories.Implementations
+@using Domain.Repositories.Interfaces
+@using Model
+@rendermode InteractiveServer
+@inject IRepositoryAsync<User> UserRepository
+<h3>LoginPage</h3>
+<div class="container d-flex justify-content-center align-items-center">
+    <div class="row border border-primary rounded">
+        <EditForm FormName="Login" Model="user" OnInvalidSubmit="async() => await SignUp()" class="p-5 d-flex flex-column align-items-center">
+            <div class="form-group pb-2">
+                <input type="text" class="form-control" placeholder="Enter username" required>
+            </div>
+            <div class="form-group pb-2">
+                <input type="password" class="form-control" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </EditForm>
+    </div>
+</div>
 
 @code {
-    
+    public User user { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    public async Task SignUp()
+    {
+        //Hashing still needs to be done
+        await UserRepository.CreateAsync(user);
+    }
+
 }

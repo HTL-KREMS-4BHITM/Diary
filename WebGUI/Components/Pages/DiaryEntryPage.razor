@@ -1,11 +1,42 @@
 @page "/DiaryEntryPage"
+@using Domain.Repositories.Implementations
+@using Domain.Repositories.Interfaces
+@using Model.Entities
+@inject IRepositoryAsync<NormalContent> NormalContentRepository
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 <h3>DiaryEntryPage</h3>
 
-<div class="">
-    
+<div class="container">
+    <div class="row">
+        <EditForm Model="@Content" FormName="NormalContent" OnInvalidSubmit="async() => await CreateNormalContent()" class="p-5 d-flex flex-column align-items-center">
+            <div class="form-group pb-2">
+                <input type="date" @bind="Content.Date" class="form-control" placeholder="Date" required>
+            </div>
+            <div class="form-group pb-2">
+                <input type="text" @bind="Content.Title" class="form-control" placeholder="Title" required>
+            </div>
+            <div class="form-group pb-2">
+                <input type="text" @bind="Content.Content" class="form-control" placeholder="Write your story, tell me please!" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Write my Entry</button>
+        </EditForm>
+    </div>
 </div>
 
 
 @code {
-    
+    public NormalContent Content = new NormalContent();
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Content.UserId = 1;
+    }
+
+    public async Task CreateNormalContent()
+    {
+        await NormalContentRepository.CreateAsync(Content);
+        NavigationManager.NavigateTo("./DiaryHomepage", true);
+    }
+
 }

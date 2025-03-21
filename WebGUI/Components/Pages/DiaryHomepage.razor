@@ -1,0 +1,37 @@
+@page "/DiaryHomepage"
+@using Domain.Repositories.Interfaces
+@using Model.Entities
+@inject IRepositoryAsync<Entry> EntryRepository
+@rendermode InteractiveServer
+<h3>DiaryHomepage</h3>
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1>Welcome to your Diary</h1>
+            <p>Here you can write your thoughts and feelings</p>
+        </div>
+        <div class="col-12">
+            @foreach (var entry in Entries)
+            {
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@entry.Title</h5>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="col-12">
+            <p>Click on the button below to start writing</p>
+            <button class="btn btn-primary">Write my Entry</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Entry> Entries = new List<Entry>();
+    protected async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Entries = await EntryRepository.ReadAllAsync();
+    }
+}

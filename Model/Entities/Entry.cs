@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.InteropServices.JavaScript;
 
 namespace Model.Entities;
 [Table("ENTRIES")]
@@ -11,6 +12,9 @@ public class Entry
     
     [Column("TITLE")]
     public string Title { get; set; }
+    
+    [Column("DATE")]
+    public DateTime Date { get; set; }
     
     
     [Column("USER_ID")]
