@@ -12,4 +12,8 @@ public class ToDoListItem
     public int EntryId { get; set; }
     
     public Entry Entry { get; set; }   
+    
+    [Column("CONTENT")]
+    public string Content { get; set; }
+    
 }

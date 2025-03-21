@@ -19,8 +19,8 @@ public class User
     [Column("USER_NAME", TypeName = "varchar(45)")]
     public string Username { get; set; }
     
-    [Column("PASSWORD_HASH", TypeName = "varchar(100)")]
-    public string PasswordHash { get; set; }
+    [Column("PASSWORD", TypeName = "varchar(100)")]
+    public string Password { get; set; }
     
     [Column("MODUS")]
     public EModus Modus { get; set; }

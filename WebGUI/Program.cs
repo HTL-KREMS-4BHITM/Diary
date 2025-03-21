@@ -1,6 +1,7 @@
 using Domain.Repositories.Implementations;
 using Domain.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Model;
 using Model.Configurations;
 using Model.Entities;
 using WebGUI.Components;
@@ -20,6 +21,7 @@ builder.Services.AddDbContextFactory<DiaryContext>(
 );
 
 builder.Services.AddTransient<IRepositoryAsync<Entry>, EntryRepository>();
+builder.Services.AddTransient<IRepositoryAsync<User>, UserRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
