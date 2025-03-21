@@ -61,6 +61,20 @@
     private List<User> accountPassw = new();
     private List<User> _users = new();
 
+    private async Task SetUser(string username)
+    {
+        await ProtectedSessionStorage.SetAsync("Username", username);
+        Console.WriteLine("asdfffffffffffffffffffffffffffffffffsdffffffffff");
+
+
+    }
+    /*protected override async Task OnInitializedAsync()
+    {
+       var result = await ProtectedSessionStorage.GetAsync<SessionData>("Username");
+       if (result.Success)
+           input = result.Value.Username;
+    }*/
+    
     protected override async Task OnInitializedAsync()
     {
         _users = await UserRepository.ReadAllAsync();
@@ -84,13 +98,11 @@
             }
         }
         
-        
         if (accountUsername.Count == 0 && accountPassw.Count == 0) {
             _errorMessage = "Username or Password is incorrect";
             return; 
         }
-
-
+        
         if (accountUsername.Count != 0)
         {
             if (accountPassw.Count == 0)
@@ -99,20 +111,28 @@
                 _errorMessage = $"Wrong Password... Your Password is {passw[0].Password}";
                 return;
             }
-        }
-        
-        if (accountUsername.Count == 0 && accountPassw.Count != 0)
-        {
-            var passw = await UserRepository.ReadAsync(u => u.Password == _user.Password);
-            _errorMessage = $"Wrong Username... Your Username is {passw[0].Username}";
-            return;
-        }
-        if (accountUsername.Count != 0 && accountPassw.Count == 0) {
-            var passw = await UserRepository.ReadAsync(u => u.Username == _user.Username);
-            _errorMessage = $"Wrong Password... Your Password is {passw[0].Password}";
-            return;
+            if (accountUsername[0].Password == _user.Password)
+            {
+                SetUser(_user.Username);
+                NavigationManager.NavigateTo("/DiaryEntryPage");
+            }
         }
 
-        NavigationManager.NavigateTo("/DiaryEntryPage");
-}
+        if (accountPassw.Count != 0)
+        {
+            if (accountUsername.Count == 0)
+            {
+                var passw = await UserRepository.ReadAsync(u => u.Password == _user.Password);
+                _errorMessage = $"Wrong Username... Your Username is {passw[0].Username}";
+                return;
+            }
+
+            if (accountUsername[0].Username == _user.Username)
+            {
+                SetUser(_user.Username);
+                NavigationManager.NavigateTo("/DiaryEntryPage");
+            }
+
+        }
+    }
 }
