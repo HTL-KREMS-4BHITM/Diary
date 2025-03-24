@@ -1,0 +1,19 @@
+@using Model.Entities
+@inject NavigationManager NavigationManager
+<div class="card col-3">
+    <div class="card-body d-flex justify-content-center align-items-center flex-column">
+        <h3 class="card-title">@entry.Title</h3>
+        <button class="btn" onclick="@RedirectToEntry">View your entry?</button>
+
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Entry entry { get; set; }
+    
+    public void RedirectToEntry()
+    {
+        NavigationManager.NavigateTo($"/ViewEntry/{entry.EntryId}", true);
+    }
+}

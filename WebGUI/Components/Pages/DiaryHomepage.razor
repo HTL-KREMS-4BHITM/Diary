@@ -1,37 +1,56 @@
 @page "/DiaryHomepage"
+@using Domain.Repositories.Implementations
 @using Domain.Repositories.Interfaces
 @using Model.Entities
 @inject IRepositoryAsync<Entry> EntryRepository
+@inject NavigationManager NavigationManager
 @rendermode InteractiveServer
-<h3>DiaryHomepage</h3>
-<div class="container">
+<style>
+    .btn {
+        background-color: #6610f2;
+        color: white;
+        text-align: center;
+    }
+    .card-title .heading .lead .bottom{
+        color: mediumpurple;
+    }
+    .heading{
+        text-decoration: underline #6610f2;
+    }
+    .card{
+        background-color: #b6d4fe;
+    }
+</style>
+
+<div class="container vh-100 d-flex justify-content-center align-items-center">
     <div class="row">
-        <div class="col-12">
-            <h1>Welcome to your Diary</h1>
-            <p>Here you can write your thoughts and feelings</p>
+        <div class="col-12 d-flex justify-content-center align-items-center flex-column">
+            <h1 class="heading">Welcome to your Diary</h1>
+            <p class="lead">Here you can write your thoughts and feelings</p>
         </div>
-        <div class="col-12">
+        <div class="col-12 d-flex justify-content-center align-items-center flex-row pt-4">
             @foreach (var entry in Entries)
             {
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">@entry.Title</h5>
-                    </div>
-                </div>
+                <EntryComponent entry="entry"></EntryComponent>
             }
         </div>
-        <div class="col-12">
-            <p>Click on the button below to start writing</p>
-            <button class="btn btn-primary">Write my Entry</button>
+        <div class="col-12 d-flex pt-5 justify-content-center align-items-center flex-column">
+            <p class="bottom">Click on the button below to start writing</p>
+            <button class="btn btn-primary" onclick="@RedirectToDiaryEntryPage">Write my Entry</button>
         </div>
     </div>
 </div>
 
 @code {
     public List<Entry> Entries = new List<Entry>();
-    protected async Task OnInitializedAsync()
+    protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        //Hier muss die im EntryRepository definierte Methode GetEntriesForUser() aufgerufen werden
         Entries = await EntryRepository.ReadAllAsync();
+    }
+    public void RedirectToDiaryEntryPage()
+    {
+        NavigationManager.NavigateTo("/DiaryEntryPage", true);
     }
 }
