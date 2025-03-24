@@ -9,7 +9,7 @@
 
 <div class="container">
     <div class="row">
-        <EditForm Model="@Content" FormName="NormalContent" OnInvalidSubmit="async() => await CreateNormalContent()" class="p-5 d-flex flex-column align-items-center">
+        <EditForm Model="@Content" FormName="NormalContent" OnValidSubmit="async() => await CreateNormalContent()" class="p-5 d-flex flex-column align-items-center">
             <div class="form-group pb-2">
                 <input type="date" @bind="Content.Date" class="form-control" placeholder="Date" required>
             </div>
@@ -36,7 +36,7 @@
     public async Task CreateNormalContent()
     {
         await NormalContentRepository.CreateAsync(Content);
-        NavigationManager.NavigateTo("./DiaryHomepage", true);
+        NavigationManager.NavigateTo("/DiaryHomepage", true);
     }
 
 }
