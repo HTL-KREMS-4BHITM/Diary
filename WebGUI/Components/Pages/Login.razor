@@ -22,6 +22,13 @@
 
 </style>
 <h3>Login</h3>
+<div>
+    @foreach (var u in accountPassw)
+    {
+        <h1>@u.Username</h1>
+        <h1>@u.Password</h1>
+    }
+</div>
 <div class="section-login py-5">
     <div class="container">
         <h3 class="text-center mb-4">Login</h3>
@@ -64,9 +71,6 @@
     private async Task SetUser(string username)
     {
         await ProtectedSessionStorage.SetAsync("Username", username);
-        Console.WriteLine("asdfffffffffffffffffffffffffffffffffsdffffffffff");
-
-
     }
     /*protected override async Task OnInitializedAsync()
     {
@@ -84,18 +88,8 @@
     {
         foreach (var user in _users)
         {
-            if (user.Username == _user.Username)
-            {
-                accountUsername.Add(user);
-                Console.WriteLine("added to usernanem");
-            }
-
-            if (user.Password == _user.Password)
-            {
-                accountPassw.Add(user);
-                Console.WriteLine("added to passw");
-   
-            }
+            if (user.Username == _user.Username) accountUsername.Add(user);
+            if (user.Password == _user.Password) accountPassw.Add(user);
         }
         
         if (accountUsername.Count == 0 && accountPassw.Count == 0) {
@@ -108,7 +102,8 @@
             if (accountPassw.Count == 0)
             {
                 var passw = await UserRepository.ReadAsync(u => u.Username == _user.Username);
-                _errorMessage = $"Wrong Password... Your Password is {passw[0].Password}";
+                _errorMessage = "Wrong Password... Your Password is " + passw[0].Password;
+                accountUsername.Clear();
                 return;
             }
             if (accountUsername[0].Password == _user.Password)
@@ -124,13 +119,14 @@
             {
                 var passw = await UserRepository.ReadAsync(u => u.Password == _user.Password);
                 _errorMessage = $"Wrong Username... Your Username is {passw[0].Username}";
+                accountPassw.Clear();
                 return;
             }
 
             if (accountUsername[0].Username == _user.Username)
             {
                 SetUser(_user.Username);
-                NavigationManager.NavigateTo("/DiaryEntryPage");
+                NavigationManager.NavigateTo($"/DiaryEntryPage/");
             }
 
         }
