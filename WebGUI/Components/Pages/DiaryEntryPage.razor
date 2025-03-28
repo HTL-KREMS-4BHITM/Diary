@@ -3,9 +3,41 @@
 @using Domain.Repositories.Interfaces
 @using Model.Entities
 @inject IRepositoryAsync<NormalContent> NormalContentRepository
-@inject IRepositoryAsync<ToDoListItem> ToDoListRepository
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
+
+<style>
+    .notes {
+        background-attachment: local;
+        background-image:
+            linear-gradient(to right, white 10px, transparent 10px),
+            linear-gradient(to left, white 10px, transparent 10px),
+            repeating-linear-gradient(white, white 30px, #ccc 30px, #ccc 31px, white 31px);
+        line-height: 31px !important;
+        padding: 8px 10px !important;
+        border-radius: 0 0 20px 20px;
+        min-height: 40rem !important;
+        
+    }
+    .title{
+        border-radius: 20px 0 0 0;
+
+    }
+    .date{
+        border-radius: 0 20px 0 0;
+
+    }
+    
+    .placeholder{
+        background-color: red;
+        height: 250px;
+        width: 100%;
+    }
+</style>
+
+
+
+
 <h3>DiaryEntryPage</h3>
 
 <div class="container">
@@ -32,38 +64,62 @@
                 <div>@ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId).Result.Count</div> 
             </div>
         </EditForm>
+        <div class="col-lg-7">
+            <div class="row">
+                <div class="col-lg-12">
+                    <EditForm Model="@Content" FormName="NormalContent" OnValidSubmit="async () => await CreateNormalContent()" class="p-5 d-flex flex-column">
+                        <div class="row">
+                            <div class="col-lg-6 pe-0">
+                                <input type="text" @bind="Content.Title" class="form-control title" placeholder="Title" required>
+                            </div>
+                            <div class="col-lg-6 ps-0">
+                                <input type="date" @bind="Content.Date" class="form-control date" placeholder="Date" required>
+                            </div>
+                            <div class="form-floating col-lg-12">
+                                <textarea class="form-control notes" required @bind="Content.Content" id="floatingTextarea2"></textarea>
+                            </div>
+                            <div class="col-12 d-flex justify-content-center mt-2">
+                                <button type="submit" class="btn btn-primary">Write my Entry</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5 py-5">
+            <div class="row d-flex flex-column h-100">
+                <div class="col-12">
+                    <div class="placeholder"></div>
+                </div>
+                <div class="col-12 d-flex   justify-content-center">
+                    <button class="btn btn-primary mt-3">TODO</button>
+                </div>
+                <div class="col-12 mt-auto">
+                    <div class="placeholder"></div>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+        
+
     </div>
 </div>
 
 
 @code {
     public NormalContent Content = new NormalContent();
-    public ToDoListItem ToDoListItem = new ToDoListItem();
-
     protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         Content.UserId = 1;
-        
-        Content.Title = "ToDoList";
-        Content.Date = DateTime.Today;
-        await NormalContentRepository.CreateAsync(Content);
     }
 
     public async Task CreateNormalContent()
     {
         await NormalContentRepository.CreateAsync(Content);
         NavigationManager.NavigateTo("/DiaryHomepage", true);
-
     }
 
-    public async Task Enter(KeyboardEventArgs e)
-    {
-        
-        if (e.Code == "Enter")
-        {
-            ToDoListItem.EntryId = Content.EntryId;
-            await ToDoListRepository.CreateAsync(ToDoListItem);
-        }
-    }
 }
