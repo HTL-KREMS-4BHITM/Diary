@@ -1,9 +1,8 @@
-@page "/DiaryEntryPage"
+@page "/M_DiaryEntryPage"
 @using Domain.Repositories.Implementations
 @using Domain.Repositories.Interfaces
 @using Model.Entities
 @inject IRepositoryAsync<NormalContent> NormalContentRepository
-@inject IRepositoryAsync<ToDoListItem> ToDoListRepository
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 <h3>DiaryEntryPage</h3>
@@ -24,12 +23,11 @@
         </EditForm>
         <EditForm Model="@ToDoListItem" FormName="ToDoList" class="p-5 d-flex flex-column align-items-center">
             <div class="form-group pb-2">
-                @for(int i = 0; i < ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId).Result.Count; i++)
+                @for(int i = 0; i < count; i++)
                 {
-                    <input type="text" class="form-control" @bind="@ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId).Result[i].Content">
+                    <input type="text" class="form-control" value="@ToDoListItems[count-1].Content">
                 }
                 <input type="text" @bind="ToDoListItem.Content" class="form-control" placeholder="AddTask" @onkeydown="@Enter" required>
-                <div>@ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId).Result.Count</div> 
             </div>
         </EditForm>
     </div>
@@ -37,33 +35,29 @@
 
 
 @code {
+    public int count { get; set; }
     public NormalContent Content = new NormalContent();
     public ToDoListItem ToDoListItem = new ToDoListItem();
+    public List<ToDoListItem> ToDoListItems = new List<ToDoListItem>();
 
     protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         Content.UserId = 1;
-        
-        Content.Title = "ToDoList";
-        Content.Date = DateTime.Today;
-        await NormalContentRepository.CreateAsync(Content);
     }
 
     public async Task CreateNormalContent()
     {
         await NormalContentRepository.CreateAsync(Content);
         NavigationManager.NavigateTo("/DiaryHomepage", true);
-
     }
 
-    public async Task Enter(KeyboardEventArgs e)
+    public void Enter(KeyboardEventArgs e)
     {
-        
         if (e.Code == "Enter")
         {
-            ToDoListItem.EntryId = Content.EntryId;
-            await ToDoListRepository.CreateAsync(ToDoListItem);
+            ToDoListItems.Add(ToDoListItem);
+            count++;
         }
     }
 }

@@ -22,6 +22,7 @@ builder.Services.AddDbContextFactory<DiaryContext>(
 
 builder.Services.AddTransient<IRepositoryAsync<Entry>, EntryRepository>();
 builder.Services.AddTransient<IRepositoryAsync<NormalContent>, NormalContentRepository>();
+builder.Services.AddTransient<IRepositoryAsync<ToDoListItem>, ToDoListRepository>();
 builder.Services.AddTransient<IRepositoryAsync<User>, UserRepository>();
 var app = builder.Build();
 
