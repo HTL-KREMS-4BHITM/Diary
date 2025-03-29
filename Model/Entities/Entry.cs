@@ -11,14 +11,14 @@ public class Entry
     
     
     [Column("TITLE")]
-    public string Title { get; set; }
+    public string? Title { get; set; }
     
     [Column("DATE")]
-    public DateTime Date { get; set; }
+    public DateTime? Date { get; set; }
     
     
     [Column("USER_ID")]
-    public int UserId { get; set; }
+    public int? UserId { get; set; }
     
-    public User User { get; set; }
+    public User? User { get; set; }
 }

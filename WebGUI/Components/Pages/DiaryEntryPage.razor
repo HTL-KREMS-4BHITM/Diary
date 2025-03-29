@@ -2,7 +2,10 @@
 @using Domain.Repositories.Implementations
 @using Domain.Repositories.Interfaces
 @using Model.Entities
+
+@inject IRepositoryAsync<ToDoListItem> ToDoListRepository
 @inject IRepositoryAsync<NormalContent> NormalContentRepository
+@inject IRepositoryAsync<Entry> EntryRepository
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
@@ -33,6 +36,9 @@
         height: 250px;
         width: 100%;
     }
+    .crossed{
+        text-decoration: line-through;
+    }
 </style>
 
 
@@ -42,28 +48,7 @@
 
 <div class="container">
     <div class="row">
-        <EditForm Model="@Content" FormName="NormalContent" OnValidSubmit="async() => await CreateNormalContent()" class="p-5 d-flex flex-column align-items-center">
-            <div class="form-group pb-2">
-                <input type="date" @bind="Content.Date" class="form-control" placeholder="Date" required>
-            </div>
-            <div class="form-group pb-2">
-                <input type="text" @bind="Content.Title" class="form-control" placeholder="Title" required>
-            </div>
-            <div class="form-group pb-2">
-                <input type="text" @bind="Content.Content" class="form-control" placeholder="Write your story, tell me please!" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Write my Entry</button>
-        </EditForm>
-        <EditForm Model="@ToDoListItem" FormName="ToDoList" class="p-5 d-flex flex-column align-items-center">
-            <div class="form-group pb-2">
-                @for(int i = 0; i < ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId).Result.Count; i++)
-                {
-                    <input type="text" class="form-control" @bind="@ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId).Result[i].Content">
-                }
-                <input type="text" @bind="ToDoListItem.Content" class="form-control" placeholder="AddTask" @onkeydown="@Enter" required>
-                <div>@ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId).Result.Count</div> 
-            </div>
-        </EditForm>
+        
         <div class="col-lg-7">
             <div class="row">
                 <div class="col-lg-12">
@@ -89,7 +74,25 @@
         <div class="col-lg-5 py-5">
             <div class="row d-flex flex-column h-100">
                 <div class="col-12">
-                    <div class="placeholder"></div>
+                    @foreach (var i in ToDoListItems)
+                    {
+                        <div class="d-flex flex-row justify-content-center align-items-center">
+                            @if (i.Done)
+                            {
+                                <input type="text" class="form-control crossed" value="@i.Content" disabled>
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" value="@i.Content" disabled>
+                            }
+                            <input type="checkbox" @bind="i.Done" @onclick="() => UpdateCrossed(i.ItemId)"/>
+                        </div>
+                        
+                    }
+                    <EditForm Model="@ToDoListItem" FormName="ToDoList" OnValidSubmit="async () => await Enter()" class="p-5 d-flex flex-column">
+                        <input type="text" @bind="ToDoListItem.Content" class="form-control" placeholder="AddTask"/>
+                        <div>@ToDoListItem.Content</div>
+                    </EditForm>
                 </div>
                 <div class="col-12 d-flex   justify-content-center">
                     <button class="btn btn-primary mt-3">TODO</button>
@@ -109,17 +112,37 @@
 
 
 @code {
+    public Entry Entry = new Entry();
     public NormalContent Content = new NormalContent();
+    public ToDoListItem ToDoListItem = new ToDoListItem();
+    public List<ToDoListItem> ToDoListItems = new List<ToDoListItem>();
     protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         Content.UserId = 1;
+        Entry.Date = DateTime.Today;
+        await NormalContentRepository.CreateAsync(Content);
+        //ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Entry.EntryId);
     }
 
     public async Task CreateNormalContent()
     {
-        await NormalContentRepository.CreateAsync(Content);
+        await NormalContentRepository.UpdateAsync(Content);
         NavigationManager.NavigateTo("/DiaryHomepage", true);
+    }
+    public async Task Enter()
+    {
+            ToDoListItem.EntryId = Content.EntryId;
+            await ToDoListRepository.CreateAsync(ToDoListItem);
+            ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId);
+            ToDoListItem = new ToDoListItem();
+        
+    }
+    public async Task UpdateCrossed(int id)
+    {
+        var toUpdate = ToDoListItems.First(s => s.ItemId == id);
+        await ToDoListRepository.UpdateAsync(toUpdate);
+        
     }
 
 }

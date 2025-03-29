@@ -3,6 +3,7 @@
 @using Microsoft.VisualBasic
 @using Model.Entities
 @inject IRepositoryAsync<NormalContent> NormalContentRepository
+@inject IRepositoryAsync<ToDoListItem> ToDoListRepository
 <style>
     .btn {
         background-color: #6610f2;
@@ -39,7 +40,20 @@
             <div class="card col-3">
                 <div class="card-body d-flex justify-content-center align-items-center flex-column">
                     <h5>ToDo-List</h5>
-
+                    @foreach (var i in ToDoListItems)
+                    {
+                        <div class="d-flex flex-row">
+                        @if (i.Done)
+                        {
+                            <input type="text" class="form-control crossed" value="@i.Content" disabled>
+                        }
+                        else
+                        {
+                            <input type="text" class="form-control" value="@i.Content" disabled>
+                        }
+                        <input type="checkbox" @bind="i.Done" @onclick="() => UpdateCrossed(i.ItemId)"/>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -51,10 +65,18 @@
     public int id { get; set; }
 
     public NormalContent entry = new NormalContent();
+    public List<ToDoListItem> ToDoListItems = new List<ToDoListItem>();
     protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         entry = await NormalContentRepository.ReadAsync(id);
+        ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == id);
+    }
+    public async Task UpdateCrossed(int id)
+    {
+        var toUpdate = ToDoListItems.First(s => s.ItemId == id);
+        await ToDoListRepository.UpdateAsync(toUpdate);
+        
     }
     
 }

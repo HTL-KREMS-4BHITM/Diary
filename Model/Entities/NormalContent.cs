@@ -6,7 +6,7 @@ namespace Model.Entities;
 public class NormalContent:Entry
 {
     [Column("CONTENT", TypeName = "TEXT")]
-    public string Content { get; set; }
+    public string? Content { get; set; }
     
     
 }

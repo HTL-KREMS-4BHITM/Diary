@@ -16,4 +16,7 @@ public class ToDoListItem
     [Column("CONTENT")]
     public string Content { get; set; }
     
+    [Column("DONE")]
+    public bool Done { get; set; }
+    
 }
