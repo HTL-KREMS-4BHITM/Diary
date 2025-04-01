@@ -21,7 +21,6 @@
     }
 
 </style>
-<h3>Login</h3>
 <div>
     @foreach (var u in accountPassw)
     {
@@ -69,10 +68,11 @@
     private List<User> accountUsername = new();
     private List<User> accountPassw = new();
     private List<User> _users = new();
+    private User _sessionuser = new();
 
-    private async Task SetUser(string username)
+    private async Task SetUser(int userid)
     {
-        await ProtectedSessionStorage.SetAsync("Username", username);
+        await ProtectedSessionStorage.SetAsync("UserId", userid);
     }
     /*protected override async Task OnInitializedAsync()
     {
@@ -91,7 +91,8 @@
         _errorMessage = await UserRepository.CheckUser(_user.Username, _user.Password, _users);
         if (String.IsNullOrEmpty(_errorMessage))
         {
-            SetUser(_user.Username);
+            _sessionuser = _users.Where(u => u.Username == _user.Username && u.Password == _user.Password).ToList()[0];
+            SetUser(_sessionuser.UserId);
             NavigationManager.NavigateTo("/");
         }
     }
