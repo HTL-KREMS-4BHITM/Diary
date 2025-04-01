@@ -1,9 +1,11 @@
-@page "/ViewEntry/{id:int?}"
+@page "/M_ViewEntry/{id:int?}"
 @using Domain.Repositories.Interfaces
 @using Microsoft.VisualBasic
+@using Model
 @using Model.Entities
 @inject IRepositoryAsync<NormalContent> NormalContentRepository
 @inject IRepositoryAsync<ToDoListItem> ToDoListRepository
+@inject IRepositoryAsync<Response> ResponseRepository
 <style>
     .btn {
         background-color: #6610f2;
@@ -47,15 +49,31 @@
                     @foreach (var i in ToDoListItems)
                     {
                         <div class="d-flex flex-row">
-                        @if (i.Done)
-                        {
-                            <input type="text" class="form-control crossed" value="@i.Content" disabled>
-                        }
-                        else
-                        {
-                            <input type="text" class="form-control" value="@i.Content" disabled>
-                        }
-                        <input type="checkbox" @bind="i.Done" @onclick="() => UpdateCrossed(i.ItemId)"/>
+                            @if (_random.Next(0, 10) < 7)
+                            {
+                                @if (i.Done)
+                                {
+                                    <input type="text" class="form-control crossed" value="@i.Content" disabled>
+                                }
+                                else
+                                {
+                                    <input type="text" class="form-control" value="@i.Content" disabled>
+                                }
+                            }
+                            else
+                            {
+                                @if (i.Done)
+                                {
+                                    <input type="text" class="form-control" value="@i.Content" disabled>
+                                }
+                                else
+                                {
+                                    <input type="text" class="form-control crossed" value="@i.Content" disabled>
+                                }
+                                <div>@Responses[_random.Next(0, Responses.Count - 1)]</div>
+                            }
+                            
+                            <input type="checkbox" @onclick="() => UpdateCrossed(i.ItemId, i.Done)"/>
                         </div>
                     }
                 </div>
@@ -68,17 +86,29 @@
     [Parameter]
     public int id { get; set; }
 
+    Random _random = new Random();
     public NormalContent entry = new NormalContent();
     public List<ToDoListItem> ToDoListItems = new List<ToDoListItem>();
+    public List<Response> Responses = new List<Response>();
     protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         entry = await NormalContentRepository.ReadAsync(id);
+        Responses = await ResponseRepository.ReadAllAsync();
         ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == id);
     }
-    public async Task UpdateCrossed(int id)
+    public async Task UpdateCrossed(int id, bool done)
     {
+        if (done == true)
+        {
+            done = false;
+        }
+        else
+        {
+            done = true;
+        }
         var toUpdate = ToDoListItems.First(s => s.ItemId == id);
+        toUpdate.Done = done;
         await ToDoListRepository.UpdateAsync(toUpdate);
         
     }

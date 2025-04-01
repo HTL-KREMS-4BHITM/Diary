@@ -85,7 +85,7 @@
                             {
                                 <input type="text" class="form-control" value="@i.Content" disabled>
                             }
-                            <input type="checkbox" @bind="i.Done" @onclick="() => UpdateCrossed(i.ItemId)"/>
+                            <input type="checkbox" @onclick="() => UpdateCrossed(i.ItemId, i.Done)"/>
                         </div>
                         
                     }
@@ -133,14 +133,24 @@
     public async Task Enter()
     {
             ToDoListItem.EntryId = Content.EntryId;
+            ToDoListItem.Done = false;
             await ToDoListRepository.CreateAsync(ToDoListItem);
             ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId);
             ToDoListItem = new ToDoListItem();
         
     }
-    public async Task UpdateCrossed(int id)
+    public async Task UpdateCrossed(int id, bool done)
     {
+        if (done == true)
+        {
+            done = false;
+        }
+        else
+        {
+            done = true;
+        }
         var toUpdate = ToDoListItems.First(s => s.ItemId == id);
+        toUpdate.Done = done;
         await ToDoListRepository.UpdateAsync(toUpdate);
         
     }
