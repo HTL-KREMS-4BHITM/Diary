@@ -119,9 +119,18 @@
                     }
                 </div>
                 <div class="col-12 mt-auto">
-                    <Hangman></Hangman>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolores est ipsa labore laboriosam, magnam mollitia nam voluptatum. Cupiditate dicta dolorum enim itaque mollitia odio odit quasi sunt velit veritatis. Dignissimos.</p>
-                    <TicTacToe></TicTacToe>
+                    @if (randomNumber == 1)
+                    {
+                        <Hangman></Hangman>
+                    }
+                    @if(randomNumber == 0)
+                    {
+                        <TicTacToe></TicTacToe>
+                    }
+                    @if(randomNumber == 2)
+                    {
+                        <Four_in_a_row></Four_in_a_row>
+                    }
                 </div>
             </div>
         </div>
@@ -131,6 +140,9 @@
 
 @code {
     [Parameter] public Entry? CurrentPage { get; set; }
+    public int randomNumber { get; set; } = 10;
+    
+    
     public Entry Entry = new Entry();
 
     public NormalContent Content = new NormalContent();
@@ -144,8 +156,12 @@
         Entry.Date = DateTime.Today;
         await NormalContentRepository.CreateAsync(Content);
         //ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Entry.EntryId);
-    
-        
+
+        if (randomNumber == 10)
+        {
+            randomNumber = new Random().Next(0, 3);
+        }
+
     }
 
     public async Task CreateNormalContent()
@@ -173,7 +189,6 @@
             done = true;
         }
         var toUpdate = ToDoListItems.First(s => s.ItemId == id);
-        toUpdate.Done = done;
         await ToDoListRepository.UpdateAsync(toUpdate);
         
     }

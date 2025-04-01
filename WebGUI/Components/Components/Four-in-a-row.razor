@@ -1,0 +1,108 @@
+﻿@code {
+    private const int Rows = 6;
+    private const int Cols = 6;
+    private int[,] board = new int[Rows, Cols];
+    private int currentPlayer = 1;
+    private string message = "Player 1's turn";
+    private bool gameEnd = false;
+
+    private void DropPiece(int col)
+    {
+        if (!gameEnd)
+        {
+            
+            for (int row = Rows - 1; row >= 0; row--)
+            {
+                Console.WriteLine("col" + col);
+                Console.WriteLine("row" + row);
+                if (board[row, col] == 0)
+                {
+                    board[row, col] = currentPlayer;
+                    if (CheckWin(row, col))
+                    {
+                        message = $"Player {currentPlayer} wins!";
+                        StopGame();
+                    }
+                    else
+                    {
+                        currentPlayer = (currentPlayer == 1) ? 2 : 1;
+                        message = $"Player {currentPlayer}'s turn";
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+    private bool CheckWin(int row, int col)
+    {
+        int player = board[row, col];
+        return CheckDirection(row, col, 1, 0, player) ||
+               CheckDirection(row, col, 0, 1, player) ||
+               CheckDirection(row, col, 1, 1, player) ||
+               CheckDirection(row, col, 1, -1, player);
+    }
+
+    private bool CheckDirection(int row, int col, int dRow, int dCol, int player)
+    {
+        int count = 1;
+        count += CountPieces(row, col, dRow, dCol, player);
+        count += CountPieces(row, col, -dRow, -dCol, player);
+        return count >= 4;
+    }
+
+    private int CountPieces(int row, int col, int dRow, int dCol, int player)
+    {
+        int count = 0;
+        int r = row + dRow;
+        int c = col + dCol;
+        while (r >= 0 && r < Rows && c >= 0 && c < Cols && board[r, c] == player)
+        {
+            count++;
+            r += dRow;
+            c += dCol;
+        }
+        return count;
+    }
+
+    private void ResetGame()
+    {
+        board = new int[Rows, Cols];
+        currentPlayer = 1;
+        message = "Player 1's turn";
+        gameEnd = false;
+    }
+
+    private void StopGame()
+    {
+        gameEnd = true;
+    }
+}
+
+<div class="game-container">
+    <h3>@message</h3>
+    <table>
+        @for (int row = 0; row < Rows; row++)
+        {
+            <tr>
+                @for (int col = 0; col < Cols; col++)
+                {
+                    int currentCol = col; // Create a local copy of col
+                    <td @onclick="() => DropPiece(currentCol)" class="@(board[row, currentCol] == 1 ? "player1" : board[row, currentCol] == 2 ? "player2" : "empty")">
+                    </td>
+                }
+
+            </tr>
+        }
+    </table>
+    <button @onclick="ResetGame">Restart Game</button>
+</div>
+
+<style>
+    .game-container { text-align: center; }
+    table { border-collapse: collapse; margin: auto; }
+    td { width: 50px; height: 50px; border: 1px solid black; text-align: center; }
+    .player1 { background-color: red; }
+    .player2 { background-color: yellow; }
+    .empty { background-color: white; }
+</style>
