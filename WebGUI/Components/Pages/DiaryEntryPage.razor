@@ -1,14 +1,11 @@
 @page "/DiaryEntryPage"
 @page "/DiaryEntryPage/{CurrentPage}"
-@using System.Security.Cryptography
-@using Domain.Repositories.Implementations
 @using Domain.Repositories.Interfaces
 @using Model.Entities
 @using WebGUI.Components.Components
 
 @inject IRepositoryAsync<ToDoListItem> ToDoListRepository
 @inject IRepositoryAsync<NormalContent> NormalContentRepository
-@inject IRepositoryAsync<Entry> EntryRepository
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
@@ -32,12 +29,6 @@
     .date{
         border-radius: 0 20px 0 0;
 
-    }
-    
-    .placeholder{
-        background-color: red;
-        height: 250px;
-        width: 100%;
     }
     .crossed{
         text-decoration: line-through;
@@ -119,9 +110,18 @@
                     }
                 </div>
                 <div class="col-12 mt-auto">
-                    <Hangman></Hangman>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolores est ipsa labore laboriosam, magnam mollitia nam voluptatum. Cupiditate dicta dolorum enim itaque mollitia odio odit quasi sunt velit veritatis. Dignissimos.</p>
-                    <TicTacToe></TicTacToe>
+                    @if (randomNumber == 1)
+                    {
+                        <Hangman></Hangman>
+                    }
+                    @if(randomNumber == 0)
+                    {
+                        <TicTacToe></TicTacToe>
+                    }
+                    else
+                    {
+                        <Four_in_a_row></Four_in_a_row>
+                    }
                 </div>
             </div>
         </div>
@@ -131,6 +131,9 @@
 
 @code {
     [Parameter] public Entry? CurrentPage { get; set; }
+    public int randomNumber { get; set; } = 10;
+    
+    
     public Entry Entry = new Entry();
 
     public NormalContent Content = new NormalContent();
@@ -144,8 +147,12 @@
         Entry.Date = DateTime.Today;
         await NormalContentRepository.CreateAsync(Content);
         //ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Entry.EntryId);
-    
-        
+
+        if (randomNumber == 10)
+        {
+            randomNumber = new Random().Next(0, 3);
+        }
+
     }
 
     public async Task CreateNormalContent()
@@ -155,12 +162,13 @@
     }
     public async Task Enter()
     {
-            ToDoListItem.EntryId = Content.EntryId;
-            await ToDoListRepository.CreateAsync(ToDoListItem);
-            ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId);
-            ToDoListItem = new ToDoListItem();
+        ToDoListItem.EntryId = Content.EntryId;
+        await ToDoListRepository.CreateAsync(ToDoListItem);
+        ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId);
+        ToDoListItem = new ToDoListItem();
         
     }
+
     public async Task UpdateCrossed(int id)
     {
         var toUpdate = ToDoListItems.First(s => s.ItemId == id);
