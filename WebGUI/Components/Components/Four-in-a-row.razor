@@ -1,6 +1,6 @@
 ﻿@code {
     private const int Rows = 6;
-    private const int Cols = 6;
+    private const int Cols = 7; // Standard Connect Four has 7 columns
     private int[,] board = new int[Rows, Cols];
     private int currentPlayer = 1;
     private string message = "Player 1's turn";
@@ -10,11 +10,8 @@
     {
         if (!gameEnd)
         {
-            
             for (int row = Rows - 1; row >= 0; row--)
             {
-                Console.WriteLine("col" + col);
-                Console.WriteLine("row" + row);
                 if (board[row, col] == 0)
                 {
                     board[row, col] = currentPlayer;
@@ -81,28 +78,95 @@
 
 <div class="game-container">
     <h3>@message</h3>
-    <table>
+    <div class="board">
         @for (int row = 0; row < Rows; row++)
         {
-            <tr>
+            <div class="board-row">
                 @for (int col = 0; col < Cols; col++)
                 {
                     int currentCol = col; // Create a local copy of col
-                    <td @onclick="() => DropPiece(currentCol)" class="@(board[row, currentCol] == 1 ? "player1" : board[row, currentCol] == 2 ? "player2" : "empty")">
-                    </td>
+                    <div @onclick="() => DropPiece(currentCol)" class="cell @(board[row, currentCol] == 1 ? "player1" : board[row, currentCol] == 2 ? "player2" : "empty")">
+                        <div class="piece"></div>
+                    </div>
                 }
-
-            </tr>
+            </div>
         }
-    </table>
-    <button @onclick="ResetGame">Restart Game</button>
+    </div>
+    <button @onclick="ResetGame" class="restart-button">Restart Game</button>
 </div>
 
 <style>
-    .game-container { text-align: center; }
-    table { border-collapse: collapse; margin: auto; }
-    td { width: 50px; height: 50px; border: 1px solid black; text-align: center; }
-    .player1 { background-color: red; }
-    .player2 { background-color: yellow; }
-    .empty { background-color: white; }
+    .game-container {
+        text-align: center;
+        font-family: Arial, sans-serif;
+    }
+
+    h3 {
+        margin-bottom: 20px;
+        font-size: 24px;
+        color: #333;
+    }
+
+    .board {
+        display: inline-block;
+        background-color: #0074cc;
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .board-row {
+        display: flex;
+    }
+
+    .cell {
+        width: 60px;
+        height: 60px;
+        margin: 5px;
+        background-color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .cell:hover {
+        transform: scale(1.1);
+    }
+
+    .piece {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+    }
+
+    .player1 .piece {
+        background-color: red;
+    }
+
+    .player2 .piece {
+        background-color: yellow;
+    }
+
+    .empty .piece {
+        background-color: transparent;
+    }
+
+    .restart-button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 18px;
+        color: #fff;
+        background-color: #28a745;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .restart-button:hover {
+        background-color: #218838;
+    }
 </style>
