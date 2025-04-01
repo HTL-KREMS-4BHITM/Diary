@@ -1,7 +1,10 @@
 @page "/DiaryEntryPage"
+@page "/DiaryEntryPage/{CurrentPage}"
+@using System.Security.Cryptography
 @using Domain.Repositories.Implementations
 @using Domain.Repositories.Interfaces
 @using Model.Entities
+@using WebGUI.Components.Components
 
 @inject IRepositoryAsync<ToDoListItem> ToDoListRepository
 @inject IRepositoryAsync<NormalContent> NormalContentRepository
@@ -45,35 +48,60 @@
 
 
 <h3>DiaryEntryPage</h3>
-
 <div class="container">
     <div class="row">
-        
+        <!--Notes-->
         <div class="col-lg-7">
             <div class="row">
                 <div class="col-lg-12">
                     <EditForm Model="@Content" FormName="NormalContent" OnValidSubmit="async () => await CreateNormalContent()" class="p-5 d-flex flex-column">
                         <div class="row">
-                            <div class="col-lg-6 pe-0">
-                                <input type="text" @bind="Content.Title" class="form-control title" placeholder="Title" required>
-                            </div>
-                            <div class="col-lg-6 ps-0">
-                                <input type="date" @bind="Content.Date" class="form-control date" placeholder="Date" required>
-                            </div>
-                            <div class="form-floating col-lg-12">
-                                <textarea class="form-control notes" required @bind="Content.Content" id="floatingTextarea2"></textarea>
-                            </div>
-                            <div class="col-12 d-flex justify-content-center mt-2">
-                                <button type="submit" class="btn btn-primary">Write my Entry</button>
-                            </div>
+                            @if (CurrentPage != null)
+                            {
+                                <div class="col-lg-6 pe-0">
+                                    <input disabled="disabled" type="text" @bind="Content.Title" class="form-control title" placeholder="Title" required>
+                                </div>
+                                <div class="col-lg-6 ps-0">
+                                    <input disabled="disabled" type="date" @bind="Content.Date" class="form-control date" placeholder="Date" required>
+                                </div>
+                                <div class="form-floating col-lg-12">
+                                    <textarea disabled="disabled" class="form-control notes" required @bind="Content.Content" id="floatingTextarea2"></textarea>
+                                </div>
+                                <div class="col-12 d-flex justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-primary">Write my Entry</button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col-lg-6 pe-0">
+                                    <input type="text" @bind="Content.Title" class="form-control title" placeholder="Title" required>
+                                </div>
+                                <div class="col-lg-6 ps-0">
+                                    <input type="date" @bind="Content.Date" class="form-control date" placeholder="Date" required>
+                                </div>
+                                <div class="form-floating col-lg-12">
+                                    <textarea class="form-control notes" required @bind="Content.Content" id="floatingTextarea2"></textarea>
+                                </div>
+                                <div class="col-12 d-flex justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-primary">Write my Entry</button>
+                                </div>
+                            }
                         </div>
                     </EditForm>
                 </div>
             </div>
         </div>
+
+
+
+        <!--ToDoAndMinigame-->
         <div class="col-lg-5 py-5">
             <div class="row d-flex flex-column h-100">
                 <div class="col-12">
+                    <EditForm Model="@ToDoListItem" FormName="ToDoList" OnValidSubmit="async () => await Enter()" class="p-5 d-flex flex-column">
+                        <input type="text" @bind="ToDoListItem.Content" class="form-control" placeholder="AddTask"/>
+                        <div>@ToDoListItem.Content</div>
+                    </EditForm>
                     @foreach (var i in ToDoListItems)
                     {
                         <div class="d-flex flex-row justify-content-center align-items-center">
@@ -89,40 +117,35 @@
                         </div>
                         
                     }
-                    <EditForm Model="@ToDoListItem" FormName="ToDoList" OnValidSubmit="async () => await Enter()" class="p-5 d-flex flex-column">
-                        <input type="text" @bind="ToDoListItem.Content" class="form-control" placeholder="AddTask"/>
-                        <div>@ToDoListItem.Content</div>
-                    </EditForm>
-                </div>
-                <div class="col-12 d-flex   justify-content-center">
-                    <button class="btn btn-primary mt-3">TODO</button>
                 </div>
                 <div class="col-12 mt-auto">
-                    <div class="placeholder"></div>
+                    <Hangman></Hangman>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolores est ipsa labore laboriosam, magnam mollitia nam voluptatum. Cupiditate dicta dolorum enim itaque mollitia odio odit quasi sunt velit veritatis. Dignissimos.</p>
+                    <TicTacToe></TicTacToe>
                 </div>
             </div>
         </div>
-        
-        
-        
-        
-
     </div>
 </div>
 
 
 @code {
+    [Parameter] public Entry? CurrentPage { get; set; }
     public Entry Entry = new Entry();
+
     public NormalContent Content = new NormalContent();
     public ToDoListItem ToDoListItem = new ToDoListItem();
     public List<ToDoListItem> ToDoListItems = new List<ToDoListItem>();
     protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Content.UserId = 1;
+        if (CurrentPage != null)
+            Content = await NormalContentRepository.ReadAsync(CurrentPage.EntryId)!;
         Entry.Date = DateTime.Today;
         await NormalContentRepository.CreateAsync(Content);
         //ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Entry.EntryId);
+    
+        
     }
 
     public async Task CreateNormalContent()

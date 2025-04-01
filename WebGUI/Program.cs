@@ -25,6 +25,7 @@ builder.Services.AddTransient<IRepositoryAsync<NormalContent>, NormalContentRepo
 builder.Services.AddTransient<IRepositoryAsync<ToDoListItem>, ToDoListRepository>();
 builder.Services.AddTransient<IRepositoryAsync<User>, UserRepository>();
 builder.Services.AddTransient<IRepositoryAsync<Response>, ResponseRepository>();
+builder.Services.AddTransient<IUserRepositoryAsync, UserRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
