@@ -23,7 +23,7 @@ builder.Services.AddDbContextFactory<DiaryContext>(
 builder.Services.AddTransient<IRepositoryAsync<Entry>, EntryRepository>();
 builder.Services.AddTransient<IRepositoryAsync<NormalContent>, NormalContentRepository>();
 builder.Services.AddTransient<IRepositoryAsync<ToDoListItem>, ToDoListRepository>();
-builder.Services.AddTransient<IRepositoryAsync<User>, UserRepository>();
+builder.Services.AddTransient<IUserRepositoryAsync, UserRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -1,0 +1,65 @@
+﻿@page "/Signup"
+@inject IUserRepositoryAsync UserRepository
+@inject NavigationManager NavigationManager 
+@using Domain.Repositories.Interfaces
+@using Model
+
+<h3 class="text-center mb-4 pt-5">Signup</h3>
+<div class="row justify-content-center align-items-stretch equal-height">
+    <div class="login_container col-lg-4 ms-0 me-0 ps-0 pe-0 h-100 d-flex align-items-center">
+        <EditForm Model="_user" OnValidSubmit="SignUpUser" FormName="SignUpForm" class="p-4 border rounded shadow w-100">
+            <div class="mb-4 mt-5 pt-4 border-bottom border-secondary">
+                <InputText @bind-Value="_user.Username" class="form-control" placeholder="Benutzername" />
+                <ValidationMessage For="() => _user.Username" />
+            </div>
+            <div class="mb-5 mt-3 border-bottom border-secondary">
+                <InputText @bind-Value="_user.Password" type="password" class="form-control" placeholder="Passwort" />
+                <ValidationMessage For="() => _user.Password" />
+            </div>
+            <div class="mb-3 d-flex justify-content-center">
+                <span>No account? Go to Create Account.</span>
+            </div>
+            <span class="text-danger">
+                
+                @_errormessage
+            </span>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary w-50 btn text-light w-100 mb-5 mt-3 pb-2">Login</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private User _user = new();
+    private string _errormessage;
+    private List<User> _users = new();
+    protected override async Task OnInitializedAsync()
+    {
+        _users = await UserRepository.ReadAllAsync();
+    }
+
+    private async Task SignUpUser()
+    {
+        
+        _errormessage = await UserRepository.CheckUser(_user.Username, _user.Password, _users);
+        if (String.IsNullOrEmpty(_errormessage) || _errormessage.Equals("Username or Password is incorrect"))
+        {
+            
+            User user = new User()
+            {
+                Username = _user.Username,
+                Password = _user.Password,
+                Modus = EModus.IsNormal
+            };
+            await UserRepository.CreateAsync(user);
+            Console.WriteLine("asdfkjasdlfjöalsdjflaksjdf");
+            Console.WriteLine("asdfkjasdlfjöalsdjflaksjdf");
+            Console.WriteLine("asdfkjasdlfjöalsdjflaksjdf");
+            Console.WriteLine("asdfkjasdlfjöalsdjflaksjdf");
+            Console.WriteLine("asdfkjasdlfjöalsdjflaksjdf");
+            NavigationManager.NavigateTo("/login");
+        }
+        
+    }
+}
