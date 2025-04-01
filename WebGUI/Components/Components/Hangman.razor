@@ -1,0 +1,175 @@
+﻿@page "/hangman"
+
+
+<div class="hangman-game">
+    <div class="status">
+        <span>Wrong attempts: @WrongAttempts / @MaxAttempts</span>
+        @if (GameStatus != GameStatus.Playing)
+        {
+            <div class="game-over">
+                <strong>@(GameStatus == GameStatus.Won ? "You won!" : "Game Over!")</strong>
+                <button @onclick="InitializeGame">Play Again</button>
+            </div>
+        }
+    </div>
+
+    <div class="hangman-display">
+        <svg width="200" height="250">
+            <!-- Gallows -->
+            <line x1="20" y1="230" x2="120" y2="230" stroke="black" stroke-width="4" />
+            <line x1="60" y1="230" x2="60" y2="50" stroke="black" stroke-width="4" />
+            <line x1="60" y1="50" x2="140" y2="50" stroke="black" stroke-width="4" />
+            <line x1="140" y1="50" x2="140" y2="80" stroke="black" stroke-width="4" />
+
+            <!-- Hangman parts -->
+            <circle cx="140" cy="100" r="20" stroke="black" stroke-width="3" fill="none" 
+                    visibility="@(WrongAttempts >= 1 ? "visible" : "hidden")" />
+            <!-- Body -->
+            <line x1="140" y1="120" x2="140" y2="180" stroke="black" stroke-width="3" 
+                  visibility="@(WrongAttempts >= 2 ? "visible" : "hidden")" />
+            <!-- Left Arm -->
+            <line x1="140" y1="140" x2="110" y2="130" stroke="black" stroke-width="3" 
+                  visibility="@(WrongAttempts >= 3 ? "visible" : "hidden")" />
+            <!-- Right Arm -->
+            <line x1="140" y1="140" x2="170" y2="130" stroke="black" stroke-width="3" 
+                  visibility="@(WrongAttempts >= 4 ? "visible" : "hidden")" />
+            <!-- Left Leg -->
+            <line x1="140" y1="180" x2="110" y2="200" stroke="black" stroke-width="3" 
+                  visibility="@(WrongAttempts >= 5 ? "visible" : "hidden")" />
+            <!-- Right Leg -->
+            <line x1="140" y1="180" x2="170" y2="200" stroke="black" stroke-width="3" 
+                  visibility="@(WrongAttempts >= 6 ? "visible" : "hidden")" />
+        </svg>
+    </div>
+
+    <div class="word-display">
+        @foreach (var c in DisplayWord)
+        {
+            <span class="letter">@c</span>
+        }
+    </div>
+
+    <div class="keyboard">
+        @foreach (var letter in Alphabet)
+        {
+            <button class="letter-btn @(GuessedLetters.Contains(letter) ? "used" : "")"
+                    @onclick="() => HandleGuess(letter)"
+                    disabled="@(GuessedLetters.Contains(letter) || GameStatus != GameStatus.Playing)">
+                @letter
+            </button>
+        }
+    </div>
+</div>
+
+<style>
+    .hangman-game {
+        max-width: 800px;
+        margin: 20px auto;
+        text-align: center;
+    }
+
+    .status {
+        margin: 20px 0;
+        font-size: 1.2em;
+    }
+
+    .game-over {
+        margin: 20px 0;
+        padding: 10px;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+    }
+
+    .hangman-display {
+        margin: 20px 0;
+    }
+
+    .word-display {
+        font-size: 2em;
+        letter-spacing: 0.5em;
+        margin: 20px 0;
+    }
+
+    .keyboard {
+        display: grid;
+        grid-template-columns: repeat(13, 1fr);
+        gap: 5px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .letter-btn {
+        padding: 5px 10px;
+        font-size: 1.2em;
+        cursor: pointer;
+    }
+
+        .letter-btn.used {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+
+    .letter {
+        border-bottom: 3px solid #333;
+        margin: 0 5px;
+        min-width: 30px;
+        display: inline-block;
+    }
+</style>
+
+@code {
+    //Made by Deepseek
+    
+    private const int MaxAttempts = 6;
+    private readonly List<string> Words = new() { "PROGRAMMING", "DEVELOPER", "COMPUTER", "BLUEWHALE", "KNOWLEDGE" };
+    private readonly char[] Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
+
+    private string SelectedWord = "";
+    private HashSet<char> GuessedLetters = new();
+    private int WrongAttempts = 0;
+    private GameStatus GameStatus = GameStatus.Playing;
+
+    protected override void OnInitialized()
+    {
+        InitializeGame();
+    }
+
+    private void InitializeGame()
+    {
+        var random = new Random();
+        SelectedWord = Words[random.Next(Words.Count)];
+        GuessedLetters.Clear();
+        WrongAttempts = 0;
+        GameStatus = GameStatus.Playing;
+    }
+
+    private void HandleGuess(char letter)
+    {
+        if (GameStatus != GameStatus.Playing || GuessedLetters.Contains(letter))
+            return;
+
+        GuessedLetters.Add(letter);
+
+        if (!SelectedWord.Contains(letter))
+        {
+            WrongAttempts++;
+        }
+
+        CheckGameStatus();
+    }
+
+    private void CheckGameStatus()
+    {
+        if (WrongAttempts >= MaxAttempts)
+        {
+            GameStatus = GameStatus.Lost;
+        }
+        else if (SelectedWord.All(c => GuessedLetters.Contains(c)))
+        {
+            GameStatus = GameStatus.Won;
+        }
+    }
+
+    private string DisplayWord =>
+        new string(SelectedWord.Select(c => GuessedLetters.Contains(c) ? c : '_').ToArray());
+}

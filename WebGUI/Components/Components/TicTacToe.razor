@@ -1,0 +1,306 @@
+﻿@page "/tictactoe"
+
+<div class="tic-tac-toe">
+    <div class="game-status">
+        @if (Winner == null)
+        {
+            <h3>Current Player: <span class="player-@CurrentPlayer">@CurrentPlayer</span></h3>
+        }
+        else if (Winner == "Draw")
+        {
+            <h3 class="draw">Game Draw!</h3>
+        }
+        else
+        {
+            <h3 class="winner">Player @Winner Wins!</h3>
+        }
+    </div>
+
+    <div class="game-board">
+        @for (int i = 0; i < 3; i++)
+        {
+            <div class="board-row">
+                @for (int j = 0; j < 3; j++)
+                {
+                    int index = i * 3 + j;
+                    <button class="cell" 
+                            @onclick="() => HandleCellClick(index)"
+                            disabled="@(Board[index] != null || Winner != null)">
+                        <span class="mark-@Board[index]">@Board[index]</span>
+                    </button>
+                }
+            </div>
+        }
+    </div>
+
+    <button class="reset-btn" @onclick="ResetGame">Reset Game</button>
+</div>
+
+<style>
+/* Container styling */
+.tic-tac-toe {
+    max-width: 500px;
+    margin: 30px auto;
+    padding: 20px;
+    background: #f9f9f9;
+    border: 2px solid #333;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Status message */
+.game-status h3 {
+    margin: 10px 0;
+}
+
+/* Board Layout */
+.board-row {
+    display: flex;
+    justify-content: center;
+}
+
+/* Zellen-Design */
+.cell {
+    width: 80px;
+    height: 80px;
+    font-size: 2.5em;
+    margin: 2px;
+    border: 2px solid #333;
+    background: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.cell:hover:not(:disabled) {
+    background-color: #f0f0f0;
+    transform: scale(1.05);
+}
+
+.cell:disabled {
+    cursor: not-allowed;
+}
+
+.cell span {
+    line-height: 80px;
+}
+
+/* Spielerfarben */
+.player-X, .mark-X {
+    color: #2196F3;
+}
+
+.player-O, .mark-O {
+    color: #F44336;
+}
+
+.winner {
+    color: #4CAF50;
+}
+
+.draw {
+    color: #FF9800;
+}
+
+/* Reset-Button */
+.reset-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.reset-btn:hover {
+    background-color: #45a049;
+}
+</style>
+
+@code {
+    private string[] Board = new string[9];
+    // Menschlicher Spieler: "X", Computer: "O"
+    private string CurrentPlayer = "X";
+    private string Winner = null;
+
+    // Parameter zur Schwierigkeitsanpassung:
+    // BotMistakeChance: Wahrscheinlichkeit, dass der Bot einen zufälligen Zug macht.
+    private double BotMistakeChance = 0.2;
+    // MaxDepth: Begrenzung der Suchtiefe im Minimax-Algorithmus (optional, z.B. 9 = perfektes Spiel)
+    private int maxDepth = 9;
+
+    private async Task HandleCellClick(int index)
+    {
+        // Menschlicher Zug (X)
+        if (Board[index] != null || Winner != null || CurrentPlayer != "X")
+            return;
+
+        Board[index] = "X";
+        CheckForWinner();
+        if (Winner != null || Board.All(cell => cell != null))
+            return;
+
+        // Wechsle zu Computer und führe dessen Zug aus
+        CurrentPlayer = "O";
+        await Task.Delay(500); // kurze Verzögerung
+        MakeComputerMove();
+    }
+
+    private void MakeComputerMove()
+    {
+        var freeIndices = Enumerable.Range(0, Board.Length).Where(i => Board[i] == null).ToList();
+        if (freeIndices.Count == 0)
+            return;
+
+        int move;
+        // Mit einer gewissen Wahrscheinlichkeit macht der Bot einen zufälligen Zug
+        if (new Random().NextDouble() < BotMistakeChance)
+        {
+            move = freeIndices[new Random().Next(freeIndices.Count)];
+        }
+        else
+        {
+            // Andernfalls: Berechne den besten Zug mittels Minimax
+            int bestScore = int.MinValue;
+            move = -1;
+            foreach (int i in freeIndices)
+            {
+                Board[i] = "O";
+                int score = Minimax(Board, 0, false);
+                Board[i] = null;
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    move = i;
+                }
+            }
+            // Falls kein optimaler Zug ermittelt wird, wähle einen zufälligen Zug
+            if (move == -1)
+            {
+                move = freeIndices[new Random().Next(freeIndices.Count)];
+            }
+        }
+
+        Board[move] = "O";
+        CheckForWinner();
+        if (Winner == null)
+            CurrentPlayer = "X";
+    }
+
+    private void CheckForWinner()
+    {
+        int[,] lines = new int[,]
+        {
+            {0,1,2},
+            {3,4,5},
+            {6,7,8},
+            {0,3,6},
+            {1,4,7},
+            {2,5,8},
+            {0,4,8},
+            {2,4,6}
+        };
+
+        for (int i = 0; i < lines.GetLength(0); i++)
+        {
+            int a = lines[i, 0], b = lines[i, 1], c = lines[i, 2];
+            if (Board[a] != null && Board[a] == Board[b] && Board[a] == Board[c])
+            {
+                Winner = Board[a];
+                return;
+            }
+        }
+        if (Board.All(cell => cell != null))
+        {
+            Winner = "Draw";
+        }
+    }
+
+    private int Minimax(string[] boardState, int depth, bool isMaximizing)
+    {
+        // Limitierung der Suchtiefe (optional): Falls maxDepth erreicht, gib heuristisch 0 zurück
+        if (depth >= maxDepth)
+            return 0;
+
+        string result = Evaluate(boardState);
+        if (result != null)
+        {
+            if (result == "O")
+                return 10 - depth;
+            else if (result == "X")
+                return depth - 10;
+            else if (result == "Draw")
+                return 0;
+        }
+
+        if (isMaximizing)
+        {
+            int bestScore = int.MinValue;
+            for (int i = 0; i < boardState.Length; i++)
+            {
+                if (boardState[i] == null)
+                {
+                    boardState[i] = "O";
+                    int score = Minimax(boardState, depth + 1, false);
+                    boardState[i] = null;
+                    bestScore = Math.Max(score, bestScore);
+                }
+            }
+            return bestScore;
+        }
+        else
+        {
+            int bestScore = int.MaxValue;
+            for (int i = 0; i < boardState.Length; i++)
+            {
+                if (boardState[i] == null)
+                {
+                    boardState[i] = "X";
+                    int score = Minimax(boardState, depth + 1, true);
+                    boardState[i] = null;
+                    bestScore = Math.Min(score, bestScore);
+                }
+            }
+            return bestScore;
+        }
+    }
+
+    // Bewertet das Spielfeld: Gibt "O", "X" oder "Draw" zurück, falls ein Endzustand erreicht ist; sonst null.
+    private string Evaluate(string[] boardState)
+    {
+        int[,] lines = new int[,]
+        {
+            {0,1,2},
+            {3,4,5},
+            {6,7,8},
+            {0,3,6},
+            {1,4,7},
+            {2,5,8},
+            {0,4,8},
+            {2,4,6}
+        };
+
+        for (int i = 0; i < lines.GetLength(0); i++)
+        {
+            int a = lines[i, 0], b = lines[i, 1], c = lines[i, 2];
+            if (boardState[a] != null && boardState[a] == boardState[b] && boardState[a] == boardState[c])
+            {
+                return boardState[a];
+            }
+        }
+        if (boardState.All(cell => cell != null))
+            return "Draw";
+        return null;
+    }
+
+    private void ResetGame()
+    {
+        Board = new string[9];
+        CurrentPlayer = "X";
+        Winner = null;
+    }
+}
