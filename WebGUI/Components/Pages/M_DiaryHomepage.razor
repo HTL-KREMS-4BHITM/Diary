@@ -1,0 +1,65 @@
+@page "/M_DiaryHomepage"
+@using Domain.Repositories.Implementations
+@using Domain.Repositories.Interfaces
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Model
+@using Model.Entities
+@using WebGUI.Components.Components
+@inject IRepositoryAsync<Entry> EntryRepository
+@inject NavigationManager NavigationManager
+@inject ProtectedSessionStorage ProtectedSessionStorage
+@rendermode InteractiveServer
+<style>
+    .btn {
+        background-color: darkslategrey;
+        color: pink;
+        text-align: center;
+    }
+    
+</style>
+<div class="col-12 d-flex justify-content-center align-items-center pt-4">
+    <div class="row d-flex justify-content-center align-items-center">
+        @foreach (var entry in Entries)
+        {
+            <EntryComponent entry="entry"></EntryComponent>
+        }
+    </div>
+</div>
+        <div class="col-12 d-flex pt-5 justify-content-center align-items-center flex-column">
+                @if(Entries.Count != 0){
+                    <p class="bottom">
+                        Click on the button below to start writing
+                    </p>
+                }
+                <p class="bottom">
+                    To get your first entry, click below!
+                    </p>
+            <button class="btn" onclick="@RedirectToDiaryEntryPage">Write my Entry</button>
+        </div>
+
+@code {
+    public List<Entry> Entries = new List<Entry>();
+    public int output;
+    
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        //Hier muss die im EntryRepository definierte Methode GetEntriesForUser() aufgerufen werden
+        var result = await ProtectedSessionStorage.GetAsync<int>("UserId");
+        if (result.Success)
+            output = result.Value;
+        await GetEntriesForUser();
+    }
+    public void RedirectToDiaryEntryPage()
+    {
+        NavigationManager.NavigateTo("/M_DiaryEntryPage", true);
+    }
+
+    private async Task GetEntriesForUser()
+    {
+        Entries = await EntryRepository.ReadAsync(e => e.UserId == output);
+
+    }
+
+
+}

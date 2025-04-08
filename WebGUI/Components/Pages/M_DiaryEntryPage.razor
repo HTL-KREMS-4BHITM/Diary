@@ -1,63 +1,196 @@
 @page "/M_DiaryEntryPage"
+@page "/M_DiaryEntryPage/{CurrentPage}"
+@using System.Security.Cryptography
 @using Domain.Repositories.Implementations
 @using Domain.Repositories.Interfaces
 @using Model.Entities
+@using WebGUI.Components.Components
+
+@inject IRepositoryAsync<ToDoListItem> ToDoListRepository
 @inject IRepositoryAsync<NormalContent> NormalContentRepository
+@inject IRepositoryAsync<Entry> EntryRepository
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
-<h3>DiaryEntryPage</h3>
 
+<style>
+    .notes {
+        background-attachment: local;
+        background-image:
+            linear-gradient(to right, white 10px, transparent 10px),
+            linear-gradient(to left, white 10px, transparent 10px),
+            repeating-linear-gradient(white, white 30px, #ccc 30px, #ccc 31px, white 31px);
+        line-height: 31px !important;
+        padding: 8px 10px !important;
+        border-radius: 0 0 20px 20px;
+        min-height: 40rem !important;
+
+    }
+    .title{
+        border-radius: 20px 0 0 0;
+
+    }
+    .date{
+        border-radius: 0 20px 0 0;
+
+    }
+
+    .placeholder{
+        background-color: red;
+        height: 250px;
+        width: 100%;
+    }
+    .crossed{
+        text-decoration: line-through;
+    }
+</style>
+
+
+
+
+<h3>DiaryEntryPage(Magic)</h3>
 <div class="container">
     <div class="row">
-        <EditForm Model="@Content" FormName="NormalContent" OnValidSubmit="async() => await CreateNormalContent()" class="p-5 d-flex flex-column align-items-center">
-            <div class="form-group pb-2">
-                <input type="date" @bind="Content.Date" class="form-control" placeholder="Date" required>
+        <!--Notes-->
+        <div class="col-lg-7">
+            <div class="row">
+                <div class="col-lg-12">
+                    <EditForm Model="@Content" FormName="NormalContent" OnValidSubmit="async () => await CreateNormalContent()" class="p-5 d-flex flex-column">
+                        <div class="row">
+                            @if (CurrentPage != null)
+                            {
+                                <div class="col-lg-6 pe-0">
+                                    <input disabled="disabled" type="text" @bind="Content.Title" class="form-control title" placeholder="Title" required>
+                                </div>
+                                <div class="col-lg-6 ps-0">
+                                    <input disabled="disabled" type="date" @bind="Content.Date" class="form-control date" placeholder="Date" required>
+                                </div>
+                                <div class="form-floating col-lg-12">
+                                    <textarea disabled="disabled" class="form-control notes" required @bind="Content.Content" id="floatingTextarea2"></textarea>
+                                </div>
+                                <div class="col-12 d-flex justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-primary">Write my Entry</button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col-lg-6 pe-0">
+                                    <input type="text" @bind="Content.Title" class="form-control title" placeholder="Title" required>
+                                </div>
+                                <div class="col-lg-6 ps-0">
+                                    <input type="date" @bind="Content.Date" class="form-control date" placeholder="Date" required>
+                                </div>
+                                <div class="form-floating col-lg-12">
+                                    <textarea class="form-control notes" required @bind="Content.Content" id="floatingTextarea2"></textarea>
+                                </div>
+                                <div class="col-12 d-flex justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-primary">Write my Entry</button>
+                                </div>
+                            }
+                        </div>
+                    </EditForm>
+                </div>
             </div>
-            <div class="form-group pb-2">
-                <input type="text" @bind="Content.Title" class="form-control" placeholder="Title" required>
+        </div>
+
+
+
+        <!--ToDoAndMinigame-->
+        <div class="col-lg-5 py-5">
+            <div class="row d-flex flex-column h-100">
+                <div class="col-12">
+                    <EditForm Model="@ToDoListItem" FormName="ToDoList" OnValidSubmit="async () => await Enter()" class="p-5 d-flex flex-column">
+                        <input type="text" @bind="ToDoListItem.Content" class="form-control" placeholder="AddTask"/>
+                        <div>@ToDoListItem.Content</div>
+                    </EditForm>
+                    @foreach (var i in ToDoListItems)
+                    {
+                        <div class="d-flex flex-row justify-content-center align-items-center">
+                            @if (i.Done)
+                            {
+                                <input type="text" class="form-control crossed" value="@i.Content" disabled>
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" value="@i.Content" disabled>
+                            }
+                            <input type="checkbox" @onclick="() => UpdateCrossed(i.ItemId, i.Done)"/>
+                        </div>
+
+                    }
+                </div>
+                <div class="col-12 mt-auto">
+                    @if (randomNumber == 1)
+                    {
+                        <Hangman></Hangman>
+                    }
+                    @if(randomNumber == 0)
+                    {
+                        <TicTacToe></TicTacToe>
+                    }
+                    @if(randomNumber == 2)
+                    {
+                        <Four_in_a_row></Four_in_a_row>
+                    }
+                </div>
             </div>
-            <div class="form-group pb-2">
-                <input type="text" @bind="Content.Content" class="form-control" placeholder="Write your story, tell me please!" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Write my Entry</button>
-        </EditForm>
-        <EditForm Model="@ToDoListItem" FormName="ToDoList" class="p-5 d-flex flex-column align-items-center">
-            <div class="form-group pb-2">
-                @for(int i = 0; i < count; i++)
-                {
-                    <input type="text" class="form-control" value="@ToDoListItems[count-1].Content">
-                }
-                <input type="text" @bind="ToDoListItem.Content" class="form-control" placeholder="AddTask" @onkeydown="@Enter" required>
-            </div>
-        </EditForm>
+        </div>
     </div>
 </div>
 
 
 @code {
-    public int count { get; set; }
+    [Parameter] public Entry? CurrentPage { get; set; }
+    public int randomNumber { get; set; } = 10;
+
+
+    public Entry Entry = new Entry();
+
     public NormalContent Content = new NormalContent();
     public ToDoListItem ToDoListItem = new ToDoListItem();
     public List<ToDoListItem> ToDoListItems = new List<ToDoListItem>();
-
     protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Content.UserId = 1;
+        if (CurrentPage != null)
+            Content = await NormalContentRepository.ReadAsync(CurrentPage.EntryId)!;
+        Entry.Date = DateTime.Today;
+        await NormalContentRepository.CreateAsync(Content);
+        //ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Entry.EntryId);
+
+        if (randomNumber == 10)
+        {
+            randomNumber = new Random().Next(0, 3);
+        }
+
     }
 
     public async Task CreateNormalContent()
     {
-        await NormalContentRepository.CreateAsync(Content);
-        NavigationManager.NavigateTo("/DiaryHomepage", true);
+        await NormalContentRepository.UpdateAsync(Content);
+        NavigationManager.NavigateTo("/M_DiaryHomepage", true);
+    }
+    public async Task Enter()
+    {
+        ToDoListItem.EntryId = Content.EntryId;
+        ToDoListItem.Done = false;
+        await ToDoListRepository.CreateAsync(ToDoListItem);
+        ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId);
+        ToDoListItem = new ToDoListItem();
+
+    }
+    public async Task UpdateCrossed(int id, bool done)
+    {
+        if (done == true)
+        {
+            done = false;
+        }
+        else
+        {
+            done = true;
+        }
+        var toUpdate = ToDoListItems.First(s => s.ItemId == id);
+        await ToDoListRepository.UpdateAsync(toUpdate);
+
     }
 
-    public void Enter(KeyboardEventArgs e)
-    {
-        if (e.Code == "Enter")
-        {
-            ToDoListItems.Add(ToDoListItem);
-            count++;
-        }
-    }
 }

@@ -1,4 +1,10 @@
-﻿@inherits LayoutComponentBase
+﻿@using Domain.Repositories.Interfaces
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Model
+@inherits LayoutComponentBase
+
+@inject ProtectedSessionStorage ProtectedSessionStorage
+@inject IRepositoryAsync<User> UserRepository
 
 <div class="sidebar">
     <nav class="nav flex-column">
@@ -14,12 +20,34 @@
         <NavLink href="/Logout" class="nav-link">
             <span>Logout</span>
         </NavLink>
-        <NavLink href="/DiaryEntryPage" class="nav-link">
-            <span>Diary</span>
-        </NavLink>
-        <NavLink href="/DiaryHomepage" class="nav-link">
-            <span>Your Entries</span>
-        </NavLink>
+        @switch (User.Modus)
+        {
+            case EModus.IsHalloween:
+                <NavLink href="/H_DiaryEntryPage" class="nav-link">
+                    <span>Diary</span>
+                </NavLink>
+                <NavLink href="/H_DiaryHomepage" class="nav-link">
+                    <span>Your Entries</span>
+                </NavLink>
+                break;
+            case EModus.IsMagic:
+                <NavLink href="/M_DiaryEntryPage" class="nav-link">
+                    <span>Diary</span>
+                </NavLink>
+                <NavLink href="/M_DiaryHomepage" class="nav-link">
+                    <span>Your Entries</span>
+                </NavLink>
+                break;
+            default:
+                <NavLink href="/DiaryEntryPage" class="nav-link">
+                    <span>Diary</span>
+                </NavLink>
+                <NavLink href="/DiaryHomepage" class="nav-link">
+                    <span>Your Entries</span>
+                </NavLink>
+                break;
+        }
+        
     </nav>
 </div>
 
@@ -43,3 +71,17 @@
         color: #6A5C55;
     }
 </style>
+
+@code
+{
+    public User User = new User();
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        //Hier muss die im EntryRepository definierte Methode GetEntriesForUser() aufgerufen werden
+        var result = await ProtectedSessionStorage.GetAsync<int>("UserId");
+        if (result.Success)
+            User = await UserRepository.ReadAsync(result.Value);
+    }
+    
+}

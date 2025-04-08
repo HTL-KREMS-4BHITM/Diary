@@ -1,0 +1,27 @@
+@using Model.Entities
+@inject NavigationManager NavigationManager
+<style>
+    .card{
+        background-color: darkslategrey;
+        color: pink;
+        height: 100%;
+    }
+</style>
+<div class="card col-3 m-2 shadow">
+    <div class="card-body d-flex justify-content-center align-items-center flex-column">
+        <h3 class="card-title">@entry.Title</h3>
+        <h6>@entry.Date?.ToString("dd/MM/yyyy")</h6>
+        <button class="btn" onclick="@RedirectToEntry">View entry</button>
+
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Entry entry { get; set; }
+    
+    public void RedirectToEntry()
+    {
+        NavigationManager.NavigateTo($"/M_ViewEntry/{entry.EntryId}", true);
+    }
+}
