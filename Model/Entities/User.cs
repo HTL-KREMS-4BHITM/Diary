@@ -5,9 +5,9 @@ namespace Model;
 
 public enum EModus
 {
-    IsMagic, 
-    IsNormal,
-    IsHalloween
+    IsMagic = 0, 
+    IsNormal = 1,
+    IsHalloween = 2
 }
 
 [Table("USERS")]

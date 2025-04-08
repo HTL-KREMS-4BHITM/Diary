@@ -1,16 +1,34 @@
-﻿@using Domain.Repositories.Interfaces
+﻿@using Domain.Repositories.Implementations
+@using Domain.Repositories.Interfaces
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
-@using Model
-@inherits LayoutComponentBase
-
 @inject ProtectedSessionStorage ProtectedSessionStorage
-@inject IRepositoryAsync<User> UserRepository
-
-<div class="sidebar">
+@inject IUserRepositoryAsync UserRepository; 
+@using Model
+<style>
+    .normal{
+        
+    }
+    .nav-item .nav-link{
+        color:#665148 ;
+    }
+    .sidebar{
+        background-color: #C1AF9E !important;
+    }
+    .magic{
+        
+    }
+    .halloween{
+        
+    }
+</style>
+<div class="sidebar d-flex h-100">
     <nav class="nav flex-column">
         <NavLink href="/" class="nav-link logo" Match="NavLinkMatch.All">
             <span class="fs-3">Magical Diary</span>
         </NavLink>
+
+        
+
         <NavLink href="/Login" class="nav-link">
             <span>Login</span>
         </NavLink>
@@ -20,6 +38,7 @@
         <NavLink href="/Logout" class="nav-link">
             <span>Logout</span>
         </NavLink>
+
         @switch (User.Modus)
         {
             case EModus.IsHalloween:
@@ -47,41 +66,40 @@
                 </NavLink>
                 break;
         }
-        
+        <div class="px-3 mt-auto mb-3">
+            <label class="form-label fw-bold mt-3">Modus</label>
+            <select class="form-select w-100" @onchange="OnModusChanged" value="@((int)User.Modus)">
+                <option value="0">Magic</option>
+                <option value="1">Standard</option>
+                <option value="2">Halloween</option>
+            </select>
+        </div>
+
     </nav>
 </div>
 
-<style>
-    .sidebar {
-        width:250px;
-        height: 100vh;
-        position: fixed;
-        background-color: #f8f9fa;
-        padding: 0px;
-        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    }
-    .logo{
-        color:#775A4D;
-        font-family: Rakkas;
-    }
-    .navbar-brand :hover {
-        color: #6A5C55;
-    }
-    .nav{
-        color: #6A5C55;
-    }
-</style>
-
-@code
-{
+@code {
     public User User = new User();
-    protected async override Task OnInitializedAsync()
+
+    protected override async Task OnInitializedAsync()
     {
-        await base.OnInitializedAsync();
-        //Hier muss die im EntryRepository definierte Methode GetEntriesForUser() aufgerufen werden
-        var result = await ProtectedSessionStorage.GetAsync<int>("UserId");
-        if (result.Success)
-            User = await UserRepository.ReadAsync(result.Value);
+        var idResult = await ProtectedSessionStorage.GetAsync<int>("UserId");
+        var modusResult = await ProtectedSessionStorage.GetAsync<int>("modus");
+
+        if (idResult.Success)
+            User = await UserRepository.ReadAsync(idResult.Value);
+
+        if (modusResult.Success)
+            User.Modus = (EModus)modusResult.Value;
     }
-    
+
+    private async Task OnModusChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var selectedModus))
+        {
+            User.Modus = (EModus)selectedModus;
+            await ProtectedSessionStorage.SetAsync("modus", selectedModus);
+            StateHasChanged();
+        }
+    }
 }

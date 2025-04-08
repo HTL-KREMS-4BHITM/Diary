@@ -9,7 +9,14 @@
 </style>
 <div class="card col-3 m-2 shadow">
     <div class="card-body d-flex justify-content-center align-items-center flex-column">
-        <h3 class="card-title">@entry.Title</h3>
+        @if (entry.Title != null)
+        {
+            <h3 class="card-title">@entry.Title</h3>
+        }
+        else
+        {
+            <h3 class="card-title">ToDo List</h3>
+        }
         <h6>@entry.Date?.ToString("dd/MM/yyyy")</h6>
         <button class="btn" onclick="@RedirectToEntry">View entry</button>
 
