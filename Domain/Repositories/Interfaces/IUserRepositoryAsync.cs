@@ -2,7 +2,7 @@
 
 namespace Domain.Repositories.Interfaces;
 
-public interface IUserRepositoryAsync:IRepositoryAsync<User>
+public interface IUserRepositoryAsync<TEntity>:IRepositoryAsync<TEntity> where TEntity : class
 {
     Task<string> CheckUser(string username, string password, List<User> _users);
 }

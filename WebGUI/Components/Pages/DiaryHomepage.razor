@@ -15,15 +15,37 @@
         color: #775A4D;
         text-align: center;
     }
+    .sorting{
+        background-color: lightgrey;
+        color: white;
+        border: grey solid;
+        border-radius: 20px;
+        height: 100px;
+        width: 100%;
+    }
     
 </style>
-<div class="col-12 d-flex justify-content-center align-items-center pt-4 mb-5">
+<div class="container col-12 d-flex justify-content-center align-items-start">
+<div class="col-2 d-flex justify-content-center align-items-center pt-4 mb-5">
+    <div class="col-3 flex-column d-flex justify-content-start align-items-center sorting">
+        <h4>Sortieren:</h4>
+        <div>
+            <select name="sorting" id="sorting" class="form-select" @onchange="SortingEntries">
+                <option value="Datum">Datum</option>
+                <option value="Titel">Titel</option>
+                <option value="Id">Id</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="col-10 d-flex justify-content-center align-items-center pt-4 mb-5">
     <div class="row d-flex justify-content-center align-items-center">
         @foreach (var entry in Entries)
         {
             <EntryComponent entry="entry"></EntryComponent>
         }
     </div>
+</div>
 </div>
         <div class="col-12 d-flex pt-5 justify-content-center align-items-center flex-column">
                 @if(Entries.Count != 0){
@@ -61,5 +83,20 @@
 
     }
 
-
+    public void SortingEntries(ChangeEventArgs e)
+    {
+        var value = e.Value.ToString();
+        if (value == "Datum")
+        {
+            Entries = Entries.OrderBy(e => e.Date).ToList();
+        }
+        else if (value == "Titel")
+        {
+            Entries = Entries.OrderBy(e => e.Title).ToList();
+        }
+        else if (value == "Id")
+        {
+            Entries = Entries.OrderBy(e => e.EntryId).ToList();
+        }
+    }
 }

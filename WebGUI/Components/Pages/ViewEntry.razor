@@ -1,9 +1,13 @@
 @page "/ViewEntry/{id:int?}"
 @using Domain.Repositories.Interfaces
 @using Microsoft.VisualBasic
+@using Model
 @using Model.Entities
 @inject IRepositoryAsync<NormalContent> NormalContentRepository
 @inject IRepositoryAsync<ToDoListItem> ToDoListRepository
+@inject IRepositoryAsync<Response> ResponseRepository
+@inject IRepositoryAsync<Entry> EntryRepository
+@inject NavigationManager NavigationManager
 <style>
     .btn {
         background-color: #6610f2;
@@ -47,18 +51,42 @@
                     @foreach (var i in ToDoListItems)
                     {
                         <div class="d-flex flex-row">
-                        @if (i.Done)
-                        {
-                            <input type="text" class="form-control crossed" value="@i.Content" disabled>
-                        }
-                        else
-                        {
-                            <input type="text" class="form-control" value="@i.Content" disabled>
-                        }
-                        <input type="checkbox" @bind="i.Done" @onclick="() => UpdateCrossed(i.ItemId)"/>
+                            @if (_random.Next(0, 10) < 7)
+                            {
+                                @if (i.Done)
+                                {
+                                    <input type="text" class="form-control crossed" value="@i.Content" disabled>
+                                }
+                                else
+                                {
+                                    <input type="text" class="form-control" value="@i.Content" disabled>
+                                }
+                            }
+                            else
+                            {
+                                @if (i.Done)
+                                {
+                                    <input type="text" class="form-control" value="xxxxxxxxxxxxxx" disabled>
+                                }
+                                else
+                                {
+                                    <input type="text" class="form-control crossed" value="xxxxxxxxxxxxxx" disabled>
+                                }
+                                <div>@Responses[_random.Next(0, Responses.Count - 1)].Text</div>
+                            }
+                            
+                            <input type="checkbox" @onclick="() => UpdateCrossed(i.ItemId, i.Done)"/>
                         </div>
                     }
                 </div>
+            </div>
+        </div>
+        <div class="col-12 d-flex flex-row pt-4">
+            <div class="col-12 d-flex justify-content-around align-items-center flex-row">
+                <button class="btn btn-primary" @onclick="async () => await PreviousPage()">&lt</button>
+                <button class="btn btn-primary" disabled>...</button>
+                <button class="btn btn-primary" @onclick="async () => await NextPage()">&gt</button>
+                <button class="btn btn-primary" @onclick="async () => await LastPage()">&gt &gt &gt</button>
             </div>
         </div>
     </div>
@@ -68,19 +96,54 @@
     [Parameter]
     public int id { get; set; }
 
+    
+    Random _random = new Random();
     public NormalContent entry = new NormalContent();
     public List<ToDoListItem> ToDoListItems = new List<ToDoListItem>();
+    public List<Response> Responses = new List<Response>();
+    public List<Entry> Entries = new List<Entry>();
     protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         entry = await NormalContentRepository.ReadAsync(id);
+        Responses = await ResponseRepository.ReadAllAsync();
         ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == id);
+        Entries = await EntryRepository.ReadAllAsync();
     }
-    public async Task UpdateCrossed(int id)
+    public async Task UpdateCrossed(int id, bool done)
     {
+        if (done == true)
+        {
+            done = false;
+        }
+        else
+        {
+            done = true;
+        }
         var toUpdate = ToDoListItems.First(s => s.ItemId == id);
+        toUpdate.Done = done;
         await ToDoListRepository.UpdateAsync(toUpdate);
         
+    }
+    public async Task PreviousPage()
+    {
+        NavigationManager.NavigateTo("/ViewEntry/" + Entries[GetIndex()-1].EntryId, true);
+    }
+    public async Task NextPage()
+    {
+        
+        NavigationManager.NavigateTo("/ViewEntry/" + Entries[GetIndex()+1].EntryId, true);
+    }
+    public async Task LastPage()
+    {
+        
+        NavigationManager.NavigateTo("/ViewEntry/" + Entries.LastOrDefault().EntryId, true);
+    }
+
+    public int GetIndex()
+    {
+        var page = Entries.First(s => s.EntryId == id);
+        return Entries.IndexOf(page);
     }
     
 }

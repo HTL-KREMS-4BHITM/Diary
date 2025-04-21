@@ -3,12 +3,14 @@
 @using System.Security.Cryptography
 @using Domain.Repositories.Implementations
 @using Domain.Repositories.Interfaces
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using Model.Entities
 @using WebGUI.Components.Components
 
 @inject IRepositoryAsync<ToDoListItem> ToDoListRepository
 @inject IRepositoryAsync<NormalContent> NormalContentRepository
 @inject IRepositoryAsync<Entry> EntryRepository
+@inject ProtectedSessionStorage ProtectedSessionStorage
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
@@ -108,16 +110,23 @@
                     </EditForm>
                     @foreach (var i in ToDoListItems)
                     {
-                        <div class="d-flex flex-row justify-content-center align-items-center">
+                        <div class="m-4 d-flex flex-row justify-content-between align-items-center">
                             @if (i.Done)
                             {
                                 <input type="text" class="form-control crossed" value="@i.Content" disabled>
+                                
                             }
                             else
                             {
                                 <input type="text" class="form-control" value="@i.Content" disabled>
+                                
                             }
-                            <input type="checkbox" @onclick="() => UpdateCrossed(i.ItemId, i.Done)"/>
+
+                            <button type="button" class="btn btn-danger" @onclick="async() => await DeleteToDoItem(i.ItemId)">X</button>
+                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                <div>Done?</div>
+                                <input type="checkbox" @onclick="async () => await UpdateCrossed(i.ItemId, i.Done)"/>
+                            </div>
                         </div>
 
                     }
@@ -158,6 +167,8 @@
         if (CurrentPage != null)
             Content = await NormalContentRepository.ReadAsync(CurrentPage.EntryId)!;
         Entry.Date = DateTime.Today;
+        var idResult = await ProtectedSessionStorage.GetAsync<int>("UserId");
+        Content.UserId = idResult.Value;
         await NormalContentRepository.CreateAsync(Content);
         //ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Entry.EntryId);
 
@@ -181,6 +192,12 @@
         ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId);
         ToDoListItem = new ToDoListItem();
 
+    }
+
+    public async Task DeleteToDoItem(int id)
+    {
+        await ToDoListRepository.DeleteAsync(id);
+        ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId);
     }
     public async Task UpdateCrossed(int id, bool done)
     {

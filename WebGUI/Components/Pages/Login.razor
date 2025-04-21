@@ -5,7 +5,7 @@
 @using Model
 @using Model.Entities
 @inject ProtectedSessionStorage ProtectedSessionStorage
-@inject IUserRepositoryAsync UserRepository 
+@inject IUserRepositoryAsync<User> UserRepository 
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 <style>

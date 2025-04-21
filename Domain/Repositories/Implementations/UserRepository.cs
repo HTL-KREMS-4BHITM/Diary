@@ -4,7 +4,7 @@ using Model.Configurations;
 
 namespace Domain.Repositories.Implementations;
 
-public class UserRepository:ARepositoryAsync<User>, IUserRepositoryAsync
+public class UserRepository:ARepositoryAsync<User>, IUserRepositoryAsync<User>
 {
     public UserRepository(DiaryContext context) : base(context)
     {

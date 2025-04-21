@@ -1,5 +1,6 @@
 ﻿@page "/Signup"
-@inject IUserRepositoryAsync UserRepository
+@using Model
+@inject IUserRepositoryAsync<User> UserRepository
 @inject NavigationManager NavigationManager 
 @using Domain.Repositories.Interfaces
 @using Model

@@ -108,7 +108,11 @@
                             {
                                 <input type="text" class="form-control" value="@i.Content" disabled>
                             }
-                            <input type="checkbox" @onclick="() => UpdateCrossed(i.ItemId, i.Done)"/>
+                            <button type="button" class="btn btn-danger" @onclick="async() => await DeleteToDoItem(i.ItemId)">X</button>
+                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                <div>Done?</div>
+                                <input type="checkbox" @onclick="async () => await UpdateCrossed(i.ItemId, i.Done)"/>
+                            </div>
                         </div>
                         
                     }
@@ -177,6 +181,11 @@
             ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId);
             ToDoListItem = new ToDoListItem();
         
+    }
+    public async Task DeleteToDoItem(int id)
+    {
+        await ToDoListRepository.DeleteAsync(id);
+        ToDoListItems = await ToDoListRepository.ReadAsync(a => a.EntryId == Content.EntryId);
     }
     public async Task UpdateCrossed(int id, bool done)
     {

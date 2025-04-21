@@ -17,15 +17,14 @@ builder.Services.AddDbContextFactory<DiaryContext>(
         builder.Configuration
             .GetConnectionString("DefaultConnection"),
         new MySqlServerVersion(new Version(8, 0, 27))
-    )
+    ), ServiceLifetime.Transient
 );
 
 builder.Services.AddTransient<IRepositoryAsync<Entry>, EntryRepository>();
 builder.Services.AddTransient<IRepositoryAsync<NormalContent>, NormalContentRepository>();
 builder.Services.AddTransient<IRepositoryAsync<ToDoListItem>, ToDoListRepository>();
-builder.Services.AddTransient<IRepositoryAsync<User>, UserRepository>();
 builder.Services.AddTransient<IRepositoryAsync<Response>, ResponseRepository>();
-builder.Services.AddTransient<IUserRepositoryAsync, UserRepository>();
+builder.Services.AddTransient<IUserRepositoryAsync<User>, UserRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

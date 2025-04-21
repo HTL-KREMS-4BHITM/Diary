@@ -1,8 +1,9 @@
 ﻿@using Domain.Repositories.Implementations
 @using Domain.Repositories.Interfaces
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Model
 @inject ProtectedSessionStorage ProtectedSessionStorage
-@inject IUserRepositoryAsync UserRepository; 
+@inject IUserRepositoryAsync<User> UserRepository; 
 @using Model
 <style>
     .normal{
@@ -81,13 +82,14 @@
 @code {
     public User User = new User();
 
-    protected override async Task OnInitializedAsync()
+    protected async override Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         var idResult = await ProtectedSessionStorage.GetAsync<int>("UserId");
         var modusResult = await ProtectedSessionStorage.GetAsync<int>("modus");
 
         if (idResult.Success)
-            User = await UserRepository.ReadAsync(idResult.Value);
+            User =  await UserRepository.ReadAsync(idResult.Value);
 
         if (modusResult.Success)
             User.Modus = (EModus)modusResult.Value;
